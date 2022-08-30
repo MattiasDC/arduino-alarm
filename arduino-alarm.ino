@@ -1,18 +1,18 @@
 // TO CONFIGURE!!!
 bool s_debug = false;
-long s_min_minutes = 25;
-long s_max_minutes = 35;
-long s_hours_till_start = 27;
+unsigned long s_min_minutes = 25;
+unsigned long s_max_minutes = 35;
+unsigned long s_hours_till_start = 32;
 
-long ONE_SECOND = 1000;
-long ONE_MINUTE = ONE_SECOND * 60;
-long ONE_HOUR = ONE_MINUTE * 60;
+unsigned long ONE_SECOND = 1000;
+unsigned long ONE_MINUTE = ONE_SECOND * 60;
+unsigned long ONE_HOUR = ONE_MINUTE * 60;
 
 // global variables
 bool m_started = false;
-long s_start = ONE_HOUR * s_hours_till_start;
-long m_min_wait = ONE_MINUTE * s_min_minutes;
-long m_max_wait = ONE_MINUTE * s_max_minutes;
+unsigned long s_start = ONE_HOUR * s_hours_till_start;
+unsigned long m_min_wait = ONE_MINUTE * s_min_minutes;
+unsigned long m_max_wait = ONE_MINUTE * s_max_minutes;
 float s_accelerator = 0.9;
 
 int s_pulse_time = ONE_SECOND * 1.5;
@@ -63,7 +63,7 @@ void pulse()
 }
 
 
-long calculate_wait_time()
+unsigned long calculate_wait_time()
 {
   if (!m_started)
   {
@@ -71,7 +71,7 @@ long calculate_wait_time()
     return s_start;
   }
   
-  long wait_time = random(m_min_wait, m_max_wait);
+  unsigned long wait_time = random(m_min_wait, m_max_wait);
   m_min_wait = max(round(m_min_wait*s_accelerator), 0);
   if (s_debug)
     Serial.println("Next min wait time: " + String(m_min_wait));
@@ -81,14 +81,17 @@ long calculate_wait_time()
   return wait_time;
 }
 
-long calculate_time_to_wait(long start_wait, long wait_time)
+unsigned long calculate_time_to_wait(unsigned long start_wait, unsigned long wait_time)
 {
-  return wait_time - (millis() - start_wait);
+  unsigned long waited = (millis() - start_wait);
+  if (waited > wait_time)
+    return 0;
+  return wait_time - waited;
 }
 
 void wait()
 {
-  long wait_time = calculate_wait_time();
+  unsigned long wait_time = calculate_wait_time();
 
   if (s_debug) 
   {
@@ -96,14 +99,14 @@ void wait()
     Serial.flush();
   }
 
-  long start_wait = millis();
-  long eight_seconds = 8*ONE_SECOND;
+  unsigned long start_wait = millis();
+  unsigned long eight_seconds = 8*ONE_SECOND;
   while (calculate_time_to_wait(start_wait, wait_time) > eight_seconds*2)
   {
     delay(eight_seconds);
   }
 
-  long time_to_wait = calculate_time_to_wait(start_wait, wait_time);
+  unsigned long time_to_wait = calculate_time_to_wait(start_wait, wait_time);
   delay(time_to_wait);
 }
 
